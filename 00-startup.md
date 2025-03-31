@@ -16,3 +16,22 @@
 ![1743336380892](image/00-startup/1743336380892.png)
 
 ## 1-烧录新系统
+
+这里以烧录OERV为例，新系统下载[来源](https://images.oerv.ac.cn/board?uri=products/sipeed/licheepi_4a.json&name=LicheePi+4A)，Windows驱动安装[参考](https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/4_burn_image.html#Windows-%E4%B8%8B%E9%A9%B1%E5%8A%A8%E5%AE%89%E8%A3%85%28%E7%A6%81%E7%94%A8%E9%A9%B1%E5%8A%A8%E7%AD%BE%E5%90%8D%29)，也可以直接下载[这个](https://github.com/6eanut/temp/releases/tag/licheepi4a_oerv)。以上执行好之后，便可以开始烧录新系统了。
+
+```shell
+LPI4A_RAM_VARIANT='-16g'
+OERV_VERSION='24.03-LTS'
+zstd -d openEuler-${OERV_VERSION}-riscv64-lpi4a-base-boot.ext4.zst
+zstd -d openEuler-${OERV_VERSION}-riscv64-lpi4a-base-root.ext4.zst
+fastboot flash ram u-boot-with-spl-lpi4a${LPI4A_RAM_VARIANT}.bin
+fastboot reboot
+sleep 1
+fastboot flash uboot u-boot-with-spl-lpi4a${LPI4A_RAM_VARIANT}.bin
+fastboot flash boot openEuler-${OERV_VERSION}-riscv64-lpi4a-base-boot.ext4
+fastboot flash root openEuler-${OERV_VERSION}-riscv64-lpi4a-base-root.ext4
+```
+
+然后重启开发板，以root用户登录，密码是openEuler12#$。
+
+> 目前该镜像好像默认不提供wifi支持，所以在连接有线网之前，没法使用无线网。该问题已反馈到社区，等待回复。
