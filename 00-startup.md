@@ -2,9 +2,9 @@
 
 > 感谢甲辰计划RISC-V开发板随缘漂流计划，我申请到了LicheePi 4A 16GB RAM + 128GB eMMC，这里是[Github仓库](https://github.com/rv2036/riscv-board-wandering)。
 >
-> 本文主要记录如何进入黑窗口、烧录新系统等。
+> 本文主要记录如何进入黑窗口、烧录新系统和从源码构建Tensorflow。
 
-## 0-进入黑窗口
+## 0 进入黑窗口
 
 1. 查阅sipeed的[文档](https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/2_unbox.html)，按照说明安装散热硅脂和散热风扇；
 2. 将开发板上的 `VIN:12V`连接电源，此时开发板上的红灯亮起，风扇旋转；
@@ -15,13 +15,13 @@
 
 ![1743336380892](image/00-startup/1743336380892.png)
 
-## 1-烧录新系统
+## 1 烧录新系统
 
-这里以烧录OERV为例，新系统下载[来源](https://images.oerv.ac.cn/board?uri=products/sipeed/licheepi_4a.json&name=LicheePi+4A)，Windows驱动安装[参考](https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/4_burn_image.html#Windows-%E4%B8%8B%E9%A9%B1%E5%8A%A8%E5%AE%89%E8%A3%85%28%E7%A6%81%E7%94%A8%E9%A9%B1%E5%8A%A8%E7%AD%BE%E5%90%8D%29)，也可以直接下载[这个](https://github.com/6eanut/temp/releases/tag/licheepi4a_oerv)。以上执行好之后，便可以开始烧录新系统了。
+这里以烧录OERV为例，新系统下载[来源](https://images.oerv.ac.cn/board?uri=products/sipeed/licheepi_4a.json&name=LicheePi+4A)，Windows驱动安装[参考](https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/4_burn_image.html#Windows-%E4%B8%8B%E9%A9%B1%E5%8A%A8%E5%AE%89%E8%A3%85%28%E7%A6%81%E7%94%A8%E9%A9%B1%E5%8A%A8%E7%AD%BE%E5%90%8D%29)，也可以直接下载[这个](https://github.com/6eanut/temp/releases/download/licheepi4a_oerv24.03-lts-sp1_th1520-bluetooth/licheepi4a_oerv24.03-lts-sp1.zip)。以上执行好之后，便可以开始烧录新系统了。
 
 ```shell
 LPI4A_RAM_VARIANT='-16g'
-OERV_VERSION='24.03-LTS'
+OERV_VERSION='24.03-LTS-SP1'
 zstd -d openEuler-${OERV_VERSION}-riscv64-lpi4a-base-boot.ext4.zst
 zstd -d openEuler-${OERV_VERSION}-riscv64-lpi4a-base-root.ext4.zst
 fastboot flash ram u-boot-with-spl-lpi4a${LPI4A_RAM_VARIANT}.bin
@@ -32,6 +32,103 @@ fastboot flash boot openEuler-${OERV_VERSION}-riscv64-lpi4a-base-boot.ext4
 fastboot flash root openEuler-${OERV_VERSION}-riscv64-lpi4a-base-root.ext4
 ```
 
-然后重启开发板，以root用户登录，密码是openEuler12#$。
+然后重启开发板，以root用户登录，密码是openEuler12#$
 
-> 目前该镜像好像默认不提供wifi支持，所以在连接有线网之前，没法使用无线网。该问题已反馈到社区，等待回复。
+### 1-1 wifi设置
+
+因为板卡上的网卡型号是AIC8800，而OERV24.03-LTS-SP1目前还不支持，所以需要安装th1520-bluetooth固件rpm包，参考[这里](https://gitee.com/openeuler/RISC-V/issues/IBXGED)。
+
+1. th1520-bluetooth固件rpm包，源码在[这里](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:Factory:Board:TH1520/th1520-bluetooth)，可以通过qemu进行构建，qemu搭建方式在[这里](https://6eanut.github.io/NOTEBOOK/25-Q1/03_qemu_oerv.html)，obs构建可以参考[这里](https://6eanut.github.io/NOTEBOOK/24-Q3/build-bazel-riscv.html)；
+2. 在Windows下可以通过[minitool partition wizard](https://www.partitionwizard.jp/free-partition-manager.html)将U盘格式化为ext4，通过[ext4fds](https://github.com/bobranten/Ext4Fsd)将构建的rpm包拷入U盘；
+3. 将U盘插入板卡，挂载U盘，并进行安装。
+
+```shell
+# 挂载u盘
+mkdir /mnt/usb
+mount /dev/sda1 /mnt/usb
+
+dnf install --disablerepo=* ./th1520-bluetooth-2.0-2.oe2403.riscv64.rpm
+
+nmlci device status 						#查看wlan
+nmcli device wifi list 						#查看可用wifi
+nmcli device wifi connect "WiFi名称" password "WiFi密码" 	#连接wifi
+ping baidu.com							#检查网络
+nmcli connection modify "check" connection.autoconnect yes	#设置自动连接wifi
+nmcli connection show "check" | grep autoconnect		#检查设置结果
+
+#可以关闭wifi或重启板卡检测是否能自连wifi
+```
+
+### 1-2 风扇设置
+
+发现当CPU利用率较高时，风扇转速较快，而当CPU利用率下降时，风扇转速会变小，同时噪音会变小(不知道为什么)，所以这里强制设置风扇转速为最大。
+
+风扇转速：/sys/class/hwmon/hwmon0/pwm1；按照如下方式启动好systemd服务后，可以通过/var/log/force_pwm.log来查看风扇重置记录。
+
+编写force_pwm.sh脚本：
+
+```shell
+#!/bin/bash
+
+# 定义PWM路径
+PWM_PATH="/sys/class/hwmon/hwmon0/pwm1"
+ENABLE_PATH="/sys/class/hwmon/hwmon0/pwm1_enable"
+
+# 确保手动模式
+echo 1 | tee $ENABLE_PATH > /dev/null
+
+# 持续监控
+while true; do
+    CURRENT_PWM=$(cat $PWM_PATH)
+    if [ "$CURRENT_PWM" -ne 255 ]; then
+        echo 255 | tee $PWM_PATH > /dev/null
+        echo "$(date): PWM1 被重置为 255（原值：$CURRENT_PWM）" >> /var/log/force_pwm.log
+    fi
+    sleep 5  # 每5秒检查一次
+done
+```
+
+创建systemd服务并启动：
+
+```shell
+# 创建服务文件
+sudo tee /etc/systemd/system/force_pwm.service <<EOF
+[Unit]
+Description=Force PWM1 to 255
+After=multi-user.target
+
+[Service]
+ExecStart=/bin/bash /root/mysystemd/force_pwm.sh
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 启动并设置开机自启
+sudo systemctl daemon-reload
+sudo systemctl start force_pwm
+sudo systemctl enable force_pwm
+```
+
+## 2 从源码构建Tensorflow
+
+obs环境搭建参考[这里](https://6eanut.github.io/NOTEBOOK/24-Q3/build-bazel-riscv.html)，先构建[bazel](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:openEuler:24.03/bazel)，后构建[tensorflow](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:openEuler:24.03/tensorflow)。
+
+```shell
+# 构建并安装bazel
+osc co home:6eanut:branches:openEuler:24.03/bazel
+cd home\:6eanut\:branches\:openEuler\:24.03/bazel/
+osc up -S
+rm -f _service;for file in `ls | grep -v .osc`;do new_file=${file##*:};mv $file $new_file;done
+osc build
+dnf install /var/tmp/build-root/mainline_riscv64-riscv64/home/abuild/rpmbuild/RPMS/riscv64/bazel-5.3.0-2.oe2403.riscv64.rpm -y
+
+# 构建并安装Tensorflow
+osc co home:6eanut:branches:openEuler:24.03/tensorflow
+cd home\:6eanut\:branches\:openEuler\:24.03/tensorflow/
+osc up -S
+rm -f _service;for file in `ls | grep -v .osc`;do new_file=${file##*:};mv $file $new_file;done
+osc build
+```
