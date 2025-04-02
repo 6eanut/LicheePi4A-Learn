@@ -59,6 +59,8 @@ nmcli connection show "check" | grep autoconnect		#检查设置结果
 #可以关闭wifi或重启板卡检测是否能自连wifi
 ```
 
+访问Github的方法可以参考[cnNetTool](https://github.com/sinspired/cnNetTool)
+
 ### 1-2 风扇设置
 
 发现当CPU利用率较高时，风扇转速较快，而当CPU利用率下降时，风扇转速会变小，同时噪音会变小(不知道为什么)，所以这里强制设置风扇转速为最大。
@@ -114,7 +116,7 @@ sudo systemctl enable force_pwm
 
 ## 2 从源码构建Tensorflow
 
-obs环境搭建参考[这里](https://6eanut.github.io/NOTEBOOK/24-Q3/build-bazel-riscv.html)，先构建[bazel](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:openEuler:24.03/bazel)，后构建[tensorflow](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:openEuler:24.03/tensorflow)。
+obs环境搭建参考[这里](https://6eanut.github.io/NOTEBOOK/24-Q3/build-bazel-riscv.html)，先构建[bazel](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:openEuler:24.03/bazel)，后构建[tensorflow](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:home:Jingwiw:bazel/tensorflow)。
 
 ```shell
 # 构建并安装bazel
@@ -124,11 +126,6 @@ osc up -S
 rm -f _service;for file in `ls | grep -v .osc`;do new_file=${file##*:};mv $file $new_file;done
 osc build
 dnf install /var/tmp/build-root/mainline_riscv64-riscv64/home/abuild/rpmbuild/RPMS/riscv64/bazel-5.3.0-2.oe2403.riscv64.rpm -y
-
-# 构建并安装Tensorflow
-osc co home:6eanut:branches:openEuler:24.03/tensorflow
-cd home\:6eanut\:branches\:openEuler\:24.03/tensorflow/
-osc up -S
-rm -f _service;for file in `ls | grep -v .osc`;do new_file=${file##*:};mv $file $new_file;done
-osc build
 ```
+
+tensorflow的构建目前还有问题，等之后闲了再继续搞。
