@@ -116,16 +116,27 @@ sudo systemctl enable force_pwm
 
 ## 2 从源码构建Tensorflow
 
-obs环境搭建参考[这里](https://6eanut.github.io/NOTEBOOK/24-Q3/build-bazel-riscv.html)，先构建[bazel](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:openEuler:24.03/bazel)，后构建[tensorflow](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:home:Jingwiw:bazel/tensorflow)。
+obs环境搭建参考[这里](https://6eanut.github.io/NOTEBOOK/24-Q3/build-bazel-riscv.html)，先构建[bazel](https://build.tarsier-infra.isrc.ac.cn/package/show/home:6eanut:branches:openEuler:24.03/bazel)，后构建[tensorflow](https://github.com/tensorflow/tensorflow.git)，在tf构建前需要安装python3.9.6，并安装[requirements_1.txt](oerv-tf/requirements_1.txt)，tf构建后安装[requirements_2.txt](oerv-tf/requirements_2.txt)。
 
 ```shell
-# 构建并安装bazel
+# 构建并安装bazel5.3.0
 osc co home:6eanut:branches:openEuler:24.03/bazel
 cd home\:6eanut\:branches\:openEuler\:24.03/bazel/
 osc up -S
 rm -f _service;for file in `ls | grep -v .osc`;do new_file=${file##*:};mv $file $new_file;done
 osc build
 dnf install /var/tmp/build-root/mainline_riscv64-riscv64/home/abuild/rpmbuild/RPMS/riscv64/bazel-5.3.0-2.oe2403.riscv64.rpm -y
+
+# 从源码构建tensorflow2.13.0
+git clone https://github.com/tensorflow/tensorflow.git
+cd tensorflow
+git checkout tags/v2.13.0
+# 将.bazelrc中的build --define=with_xla_support=true改为false，build:linux --define=build_with_onednn_v2=true改为false
+./configure
+bazel build //tensorflow/tools/pip_package:build_pip_package --define=build_with_mkl=false --define=enable_mkl=false --define=tensorflow_mkldnn_contraction_kernel=0 --define=build_with_mkl_dnn_v1_only=false --define=tensorflow_use_mkldnn=false --define=build_with_openmp=false
+WORKSPACE=$(pwd)
+./bazel-bin/tensorflow/tools/pip_package/build_pip_package $WORKSPACE/../tensorflow_pkg
+pip install $WORKSPACE/../tensorflow_pkg/tensorflow* --no-deps
 ```
 
-tensorflow的构建目前还有问题，等之后闲了再继续搞。
+![1745028230318](image/00-startup/1745028230318.png)

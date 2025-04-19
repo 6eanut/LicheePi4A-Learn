@@ -1,0 +1,10 @@
+tensorboard==2.12.3
+tensorboard-data-server==0.7.2
+tensorflow-datasets==4.9.3
+tensorflow-metadata==1.17.1
+array-record==0.4.1
+tensorflow-estimator==2.12.0
+tensorflow-hub==0.16.1
+tf-keras==2.15.0
+tensorflow-model-optimization==0.8.0
+tf-slim==1.1.0
