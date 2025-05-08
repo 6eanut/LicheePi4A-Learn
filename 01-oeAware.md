@@ -2,6 +2,8 @@
 
 在开源之夏里面看到了“基于 RISC-V 架构的 oeAware 框架移植”这个项目，故而决定试一试。
 
+注：向openeuler/oeAware-manager社区提交的pr已被[合并](https://gitee.com/openeuler/oeAware-manager/pulls/172)。
+
 ## 0 啥是oeAware
 
 oeAware是针对于openEuler的一个工具，是一个采集-感知-调优框架，智能感知系统行为并进行调优。传统的方法都是开关某个操作，而oeAware可以将这个过程智能化。比如使多核负载均衡、减少远端内存访问等。
@@ -147,7 +149,6 @@ struct user_regs_struct {
 所以重复上述编译步骤，在host上构建oeAware，区别是对于libboundscheck.so库应该：
 
 ```shell
-cp /root/third_party_bounds_checking_function/lib/libboundscheck.so /usr/lib
 cp /root/third_party_bounds_checking_function/lib/libboundscheck.so /usr/lib64
 ```
 
