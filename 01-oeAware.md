@@ -166,7 +166,10 @@ chmod 640 config.yaml
 当启动oeaware时，会默认加载插件存储路径下的插件，插件存储路径是/usr/lib64/oeAware-plugin，可以把编译得到的so放在该路径下，而后修改权限，再次启动oeaware：
 
 ```shell
+export CPATH=/root/oeAware/oeAware-manager/build/output/include:$CPATH
 export PATH=/root/oeAware/oeAware-manager/build/output/bin:$PATH
+cp /root/oeAware/oeAware-manager/build/output/sdk/liboeaware-sdk.so /usr/lib64/
+cp /root/oeAware/oeAware-manager/build/src/common/libcommon.a /usr/lib64/
 mkdir /usr/lib64/oeAware-plugin && cd /usr/lib64/oeAware-plugin
 cp /root/oeAware/oeAware-manager/build/output/plugin/lib/*.so .
 chmod 440 *
@@ -180,3 +183,42 @@ oeaware /root/oeAware/oeAware-manager/config.yaml
 ![1746349580414](image/01-oeAware/1746349580414.png)
 
 最后，这里是适配后的代码： [https://gitee.com/peeanut/oeAware-manager](https://gitee.com/peeanut/oeAware-manager) ，欢迎交流。
+
+## 3 测试
+
+### 3-1 构建tests
+
+```shell
+cd oeAware-manager
+rm -rf build
+mkdir build
+cd build
+cmake -DWITH_TEST=on ..
+make
+```
+
+![1747965910739](image/01-oeAware/1747965910739.png)
+
+### 3-2 执行tests
+
+```shell
+# 启动oeaware，而后跑tests
+oeaware /root/oeAware/oeAware-manager/config.yaml
+```
+
+* [X] analysis_report_test
+* [X] logger_test
+* [X] serialize_test
+* [X] test_sdk(存疑)
+* [X] utils_test
+* [X] data_register_test
+* [X] safe_queue_test
+* [X] table_test
+* [X] test_xcall(存疑)
+* [X] pmu_count_test
+
+执行结果：
+
+![1747966118398](image/01-oeAware/1747966118398.png)![1747966171607](image/01-oeAware/1747966171607.png)![1747966197080](image/01-oeAware/1747966197080.png)
+
+![1747967362806](image/01-oeAware/1747967362806.png)![1747967395098](image/01-oeAware/1747967395098.png)![1747966481817](image/01-oeAware/1747966481817.png)![1747966511095](image/01-oeAware/1747966511095.png)![1747966536182](image/01-oeAware/1747966536182.png)![1747966557950](image/01-oeAware/1747966557950.png)![1747967442156](image/01-oeAware/1747967442156.png)![1747966660010](image/01-oeAware/1747966660010.png)
