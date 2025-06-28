@@ -140,3 +140,15 @@ pip install $WORKSPACE/../tensorflow_pkg/tensorflow* --no-deps
 ```
 
 ![1745028230318](image/00-startup/1745028230318.png)
+
+---
+
+## 20250628
+
+在Mac本上面，可以通过VSCode的Serial Moniter插件通过串口连接到开发板。
+
+将开发板连接到Mac之后，可以在终端里面看是否有/dev/tty.usbserial-XXXX或/dev/cu.usbserial-XXXX，有的话说明检测到了。
+
+![1751096339408](image/00-startup/1751096339408.png)
+
+然后就可以进入到终端了。
