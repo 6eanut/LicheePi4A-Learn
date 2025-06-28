@@ -49,7 +49,7 @@ mount /dev/sda1 /mnt/usb
 
 dnf install --disablerepo=* ./th1520-bluetooth-2.0-2.oe2403.riscv64.rpm
 
-nmlci device status 						#查看wlan
+nmcli device status 						#查看wlan
 nmcli device wifi list 						#查看可用wifi
 nmcli device wifi connect "WiFi名称" password "WiFi密码" 	#连接wifi
 ping baidu.com							#检查网络
@@ -152,3 +152,12 @@ pip install $WORKSPACE/../tensorflow_pkg/tensorflow* --no-deps
 ![1751096339408](image/00-startup/1751096339408.png)
 
 然后就可以进入到终端了。
+
+串口调试主要是连上wifi，然后就可以通过ssh连接到开发板了。
+
+```txt
+Host lp4a
+    HostName 192.168.0.108       # 通过ifconfig查看wlan0的inet是多少
+    Port 22
+    User root
+```
