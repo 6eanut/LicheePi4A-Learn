@@ -1,8 +1,16 @@
 # oeAware
 
-在开源之夏里面看到了“基于 RISC-V 架构的 oeAware 框架移植”这个项目，故而决定试一试。
+注：更多信息见此[链接](https://github.com/sterling-teng/oe-Aware-handbook/issues)。
 
-注：向openeuler/oeAware-manager社区提交的pr已被[合并](https://gitee.com/openeuler/oeAware-manager/pulls/172)。
+已pr合并汇总：
+
+* oeaware-manager
+  * [support riscv](https://gitee.com/openeuler/oeAware-manager/commit/c232fd70aff1231f76b6c95235d49b98cf934f6d)
+  * [Enable the analysis mode (riscv64)](https://gitee.com/openeuler/oeAware-manager/commit/002956be4d0bee2a4dcc52c9f31f6f84cbb2fb5e)
+  * [add hwprobe_analysis for RISC-V](https://gitee.com/openeuler/oeAware-manager/commit/97cdf931df2e920dfd50809420b65a2c3d0a8310)
+  * [add hwprobe_tune/hwprobe_ext_zbb_tune for RISC-V](https://gitee.com/openeuler/oeAware-manager/commit/f1f96c8c4b19950506603e82c6e582eb406c000e)
+* libkperf
+  * [support riscv64](https://gitee.com/openeuler/libkperf/commit/c09a56213d9e14f4a0b698eda9c43abe8e3fe4ef)
 
 ## 0 啥是oeAware
 
